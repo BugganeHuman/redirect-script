@@ -1,0 +1,6 @@
+.venv
+.idea
+.env
+tg_usa_session.session
+tg_usa_session.session-shm
+tg_usa_session.session-wal
