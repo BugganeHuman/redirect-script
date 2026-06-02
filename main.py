@@ -84,7 +84,6 @@ async def redirect_script(client : Client, message : Message):
                 await client.send_message(chat_id=MY, text=f"Альбом {message.media_group_id} успешно переслан.")
             except Exception as album_err:
                 print(f"Ошибка при отправке альбома: {album_err}")
-                # Если произошла ошибка, лучше убрать из кэша, чтобы попробовать снова
                 if album_key in processed_messages_cache:
                     del processed_messages_cache[album_key]
             return
@@ -149,12 +148,11 @@ async def monitor_history(client: Client):
         try:
             async for msg in client.get_chat_history(ch, limit=1):
                 last_ids[ch] = msg.id
-            print(f"Запомнили стартовый пост для канала {ch}. Последний ID: {last_ids.get(ch, 0)}")
         except Exception as e:
             print(f"Ошибка при стартовой проверке истории канала {ch}: {e}")
             last_ids[ch] = 0
 
-    print("--- МОНИТОРИНГ ИСТОРИИ ЧЕРЕЗ GET_CHAT_HISTORY ЗАПУЩЕН ---")
+    print("--- SCANNING GET_CHAT_HISTORY STARTED ---")
 
     while True:
         await asyncio.sleep(15)
