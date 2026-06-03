@@ -11,6 +11,8 @@ load_dotenv()
 TARGET_CHANNEL = int(os.getenv('TARGET_CHANNEL_TEST'))
 SOURCE_CHANNEL_1 = int(os.getenv('SOURCE_CHANNEL_1_TEST'))
 SOURCE_CHANNEL_2 = int(os.getenv('SOURCE_CHANNEL_2_TEST'))
+TARGET_GROUP_1_TEST = int(os.getenv('TEST_TARGET_GROUP_1'))
+TARGET_GROUP_2_TEST = int(os.getenv('TEST_TARGET_GROUP_2'))
 MY = int(os.getenv('LOGS_CHANNEL'))
 PHONE_NUMBER = str(os.getenv('PHONE_NUMBER'))
 
@@ -135,6 +137,20 @@ async def redirect_script(client : Client, message : Message):
                         return
 
         await message.copy(chat_id=TARGET_CHANNEL)
+        #await message.copy(chat_id=TARGET_GROUP_2_TEST)
+        #await message.copy(chat_id=TARGET_GROUP_1_TEST)
+
+        for group_name, group_id in os.environ.items():
+            if group_name.startswith('TARGET_GROUP_'):
+                await message.copy(chat_id=int(group_id))
+                print(f'message send to group {group_name}')
+
+        """
+        теперь группы моэно удобно добавлять, код не надо менять совсем
+        просто дописываешь в .env файл переменную TARGET_GROUP_(и ее номер) = ее id
+        """
+
+
         await client.send_message(chat_id=MY, text=f'сообщение - {message.id} отправлено')
     except Exception as e:
         print(e)
