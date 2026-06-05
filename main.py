@@ -62,9 +62,11 @@ async def redirect_script(client : Client, message : Message):
 
         VIP_WORDS = ["дмитри", "кабанов", "гордеев", "шукуров", "основатель", "директор",
                         "ceo", "амбассадор", 'ярослав', "фаррух", 'polymarket', 'крипт', 'торг',
-                        'virus2027', 'pulse', 'листинг', 'конспирологи', 'мир', '2027'
+                        'virus2027', 'листинг', 'конспирологи', 'мир', '2027'
                     ]
         if message.video:
+            if await check_is_vip(message, client):
+                return
             width = message.video.width
             height = message.video.height
             if height > width:
@@ -155,6 +157,23 @@ async def redirect_script(client : Client, message : Message):
     except Exception as e:
         print(e)
 
+
+async def check_is_vip(message : Message, client : Client):
+    VIP_WORDS = ["дмитри", "кабанов", "гордеев", "шукуров", "основатель", "директор",
+                 "ceo", "амбассадор", 'ярослав', "фаррух", 'polymarket', 'крипт', 'торг',
+                 'virus2027','листинг', 'конспирологи', 'мир', '2027'
+                 ]
+    text = message.text or message.caption or ''
+    text_lower = text.lower()
+    if text_lower:
+        is_vip = any(vip in text_lower for vip in VIP_WORDS)
+        if is_vip:
+            await message.copy(chat_id=TARGET_CHANNEL)
+            await client.send_message(chat_id=MY, text=f'сообщение - {message.id} отправлено')
+            return True
+        else:
+            return False
+    return False
 
 
 async def monitor_history(client: Client):
