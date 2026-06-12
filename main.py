@@ -4,13 +4,15 @@ from hydrogram import Client, filters
 from hydrogram.types import Message
 from dotenv import load_dotenv
 from cachetools import TTLCache
+from difflib import SequenceMatcher
+
 
 load_dotenv()
 
 
-TARGET_CHANNEL = int(os.getenv('TARGET_CHANNEL_TEST'))
-SOURCE_CHANNEL_1 = int(os.getenv('SOURCE_CHANNEL_1_TEST'))
-SOURCE_CHANNEL_2 = int(os.getenv('SOURCE_CHANNEL_2_TEST'))
+TARGET_CHANNEL = int(os.getenv('TARGET_CHANNEL'))
+SOURCE_CHANNEL_1 = int(os.getenv('SOURCE_CHANNEL_1'))
+SOURCE_CHANNEL_2 = int(os.getenv('SOURCE_CHANNEL_2'))
 TARGET_GROUP_1_TEST = int(os.getenv('TEST_TARGET_GROUP_1'))
 TARGET_GROUP_2_TEST = int(os.getenv('TEST_TARGET_GROUP_2'))
 MY = int(os.getenv('LOGS_CHANNEL'))
@@ -48,7 +50,42 @@ async def redirect_script(client : Client, message : Message):
         if msg_key in processed_messages_cache:
             print(f"Дубль заблокирован (по ID): {msg_key}")
             return
+        text = message.text or message.caption or ''
+        text_lower = text.lower().strip()
 
+        if text_lower:
+            if text_lower in processed_messages_cache:
+                await client.send_message(chat_id=MY, text='Сообщение скипнуто:'
+                                        ' точный дубликат текста')
+                print(f"Дубль заблокирован (100% совпадение): '{text_lower}'")
+                return
+
+            is_fuzzy_duplicate = False
+
+            for cached_item in list(processed_messages_cache.keys()):
+                if isinstance(cached_item, str) and not cached_item.startswith(('album_',
+                                                        f"{message.chat.id}_")):
+                    similarity = SequenceMatcher(None, text_lower, cached_item).ratio()
+
+                    if similarity >= 0.80:
+                        is_fuzzy_duplicate = True
+                        print(f"Дубль заблокирован (Похож на {similarity:.2%}): '{text_lower}'")
+                        break
+
+            if is_fuzzy_duplicate:
+                await client.send_message(chat_id=MY, text='Сообщение скипнуто:'
+                                    'похожий дубликат текста (>=80%)')
+                return
+
+            processed_messages_cache[text_lower] = True
+
+        processed_messages_cache[msg_key] = True
+
+
+
+
+
+        """
         text = message.text or message.caption or ''
         text_lower = text.lower().strip()
 
@@ -59,6 +96,13 @@ async def redirect_script(client : Client, message : Message):
                 return
             processed_messages_cache[text_lower] = True
         processed_messages_cache[msg_key] = True
+
+        """
+
+
+
+
+
 
         VIP_WORDS = ["дмитри", "кабанов", "гордеев", "шукуров", "основатель", "директор",
                         "ceo", "амбассадор", 'ярослав', "фаррух", 'polymarket', 'крипт', 'торг',
