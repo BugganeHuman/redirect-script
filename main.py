@@ -82,28 +82,6 @@ async def redirect_script(client : Client, message : Message):
         processed_messages_cache[msg_key] = True
 
 
-
-
-
-        """
-        text = message.text or message.caption or ''
-        text_lower = text.lower().strip()
-
-        if text_lower:
-            if text_lower in processed_messages_cache:
-                await client.send_message(chat_id=MY, text='Сообщение скипнуто: дубликат текста')
-                print(f"Дубль заблокирован (по тексту): '{text_lower}'")
-                return
-            processed_messages_cache[text_lower] = True
-        processed_messages_cache[msg_key] = True
-
-        """
-
-
-
-
-
-
         VIP_WORDS = ["дмитри", "кабанов", "гордеев", "шукуров", "основатель", "директор",
                         "ceo", "амбассадор", 'ярослав', "фаррух", 'polymarket', 'крипт', 'торг',
                         'virus2027', 'листинг', 'конспирологи', 'мир', '2027'
