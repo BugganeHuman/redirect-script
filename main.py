@@ -10,9 +10,9 @@ from difflib import SequenceMatcher
 load_dotenv()
 
 
-TARGET_CHANNEL = int(os.getenv('TARGET_CHANNEL'))
-SOURCE_CHANNEL_1 = int(os.getenv('SOURCE_CHANNEL_1'))
-SOURCE_CHANNEL_2 = int(os.getenv('SOURCE_CHANNEL_2'))
+TARGET_CHANNEL = int(os.getenv('TARGET_CHANNEL_TEST'))
+SOURCE_CHANNEL_1 = int(os.getenv('SOURCE_CHANNEL_1_TEST'))
+SOURCE_CHANNEL_2 = int(os.getenv('SOURCE_CHANNEL_2_TEST'))
 TARGET_GROUP_1_TEST = int(os.getenv('TEST_TARGET_GROUP_1'))
 TARGET_GROUP_2_TEST = int(os.getenv('TEST_TARGET_GROUP_2'))
 MY = int(os.getenv('LOGS_CHANNEL'))
@@ -42,9 +42,12 @@ async def check_chat_id(client : Client, message : Message):
 
 SOURCE_CHANNELS = [SOURCE_CHANNEL_1, SOURCE_CHANNEL_2]
 
+processed_ids_cache = TTLCache(maxsize=5000, ttl=50000)
+processed_texts_cache = TTLCache(maxsize=10000, ttl=100000)
 
 #@app.on_message(filters.chat(chats=SOURCE_CHANNELS))
 async def redirect_script(client : Client, message : Message):
+
     try:
         msg_key = f"{message.chat.id}_{message.id}"
         if msg_key in processed_messages_cache:
@@ -63,8 +66,10 @@ async def redirect_script(client : Client, message : Message):
             is_fuzzy_duplicate = False
 
             for cached_item in list(processed_messages_cache.keys()):
-                if isinstance(cached_item, str) and not cached_item.startswith(('album_',
-                                                        f"{message.chat.id}_")):
+                #if isinstance(cached_item, str) and not cached_item.startswith(('album_',
+                                                        #f"{message.chat.id}_")):
+                if isinstance(cached_item, str) and not cached_item.startswith('album_') and not any(
+                        char.isdigit() for char in cached_item.split('_')[0]):
                     similarity = SequenceMatcher(None, text_lower, cached_item).ratio()
 
                     if similarity >= 0.80:
@@ -80,6 +85,7 @@ async def redirect_script(client : Client, message : Message):
             processed_messages_cache[text_lower] = True
 
         processed_messages_cache[msg_key] = True
+
 
 
         VIP_WORDS = ["дмитри", "кабанов", "гордеев", "шукуров", "основатель", "директор",
